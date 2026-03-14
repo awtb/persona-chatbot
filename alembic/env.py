@@ -1,29 +1,45 @@
+import sys
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from sqlalchemy import URL
 
 from alembic import context
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
+sys.path.append("src")
+
+
 config = context.config
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
+
+from persona_chatbot.settings import get_settings
+from persona_chatbot.db.models import BaseModel
+
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
+target_metadata = BaseModel.metadata
+
+app_settings = get_settings()
+
+url = URL.create(
+    drivername=app_settings.db_sync_driver,
+    username=app_settings.db_user,
+    password=app_settings.db_password,
+    host=app_settings.db_host,
+    port=app_settings.db_port,
+    database=app_settings.db_name,
+)
+
+config.set_main_option(
+    "sqlalchemy.url",
+    url.render_as_string(
+        hide_password=False,
+    ),
+)
 
 
 def run_migrations_offline() -> None:
@@ -64,9 +80,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
