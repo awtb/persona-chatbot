@@ -12,15 +12,7 @@ from persona_chatbot.dto.user import UserUpdateDTO
 
 
 class UserRepo(BaseRepository):
-    async def get(self, user_id: UUID) -> UserDTO | None:
-        query = select(User).where(User.id == user_id)
-        user = await self._session.scalar(query)
-        if user is None:
-            return None
-
-        return to_user_dto(user)
-
-    async def get_by_telegram_user_id(
+    async def get(
         self,
         telegram_user_id: int,
     ) -> UserDTO | None:
