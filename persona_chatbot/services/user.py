@@ -19,8 +19,21 @@ class UserService:
         if user is not None:
             return user
 
-        return await self._user_repo.create(
-            dto=UserCreateDTO(
+        try:
+            return await self._user_repo.create(
+                dto=UserCreateDTO(
+                    telegram_user_id=telegram_user_id,
+                ),
+            )
+        except Exception as exc:
+            user = await self._user_repo.get(
                 telegram_user_id=telegram_user_id,
-            ),
-        )
+            )
+            if user is not None:
+                return user
+
+            msg = (
+                "Failed to resolve current user "
+                f"for telegram_user_id={telegram_user_id}"
+            )
+            raise RuntimeError(msg) from exc
