@@ -2,6 +2,7 @@ from uuid import UUID
 
 from sqlalchemy import select
 
+from persona_chatbot.common.exceptions import UserNotFound
 from persona_chatbot.db.mappers.user import apply_user_update_dto
 from persona_chatbot.db.mappers.user import to_user_dto
 from persona_chatbot.db.models.user import User
@@ -15,11 +16,11 @@ class UserRepo(BaseRepository):
     async def get(
         self,
         telegram_user_id: int,
-    ) -> UserDTO | None:
+    ) -> UserDTO:
         query = select(User).where(User.telegram_user_id == telegram_user_id)
         user = await self._session.scalar(query)
         if user is None:
-            return None
+            raise UserNotFound(telegram_user_id=telegram_user_id)
 
         return to_user_dto(user)
 
