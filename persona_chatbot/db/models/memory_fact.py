@@ -67,7 +67,6 @@ class MemoryFact(HasID, HasCreatedAt, BaseModel):
         foreign_keys=[user_id],
     )
     avatar: Mapped[Avatar] = relationship(
-        back_populates="memory_facts",
         foreign_keys=[avatar_id],
     )
     source_chat: Mapped[Chat | None] = relationship(

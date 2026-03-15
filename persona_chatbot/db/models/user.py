@@ -37,7 +37,6 @@ class User(HasID, HasTimestamps, BaseModel):
     )
 
     current_avatar: Mapped[Avatar | None] = relationship(
-        back_populates="current_for_users",
         foreign_keys=[current_avatar_id],
     )
     active_chat: Mapped[Chat | None] = relationship(
