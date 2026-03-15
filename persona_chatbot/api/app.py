@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from persona_chatbot.api.routers.telegram import router as telegram_router
 from persona_chatbot.bot.app import build_dispatcher
+from persona_chatbot.db.session import build_session_maker
 from persona_chatbot.logging.config import build_logging_config
 from persona_chatbot.logging.middleware import RequestLoggingMiddleware
 from persona_chatbot.settings import get_settings
@@ -28,7 +29,10 @@ def load_settings(app_instance: FastAPI) -> Settings:
 
 
 def setup_telegram_dispatcher(app_instance: FastAPI) -> None:
-    app_instance.state.tg_dispatcher = build_dispatcher()
+    session_maker = app_instance.state.session_maker
+    app_instance.state.tg_dispatcher = build_dispatcher(
+        session_maker=session_maker,
+    )
 
 
 def setup_telegram_bot(app_instance: FastAPI) -> None:
@@ -82,6 +86,7 @@ async def setup_db_engine(app_instance: FastAPI) -> None:
     engine = create_async_engine(uri)
 
     app_instance.state.engine = engine
+    app_instance.state.session_maker = build_session_maker(engine=engine)
 
 
 async def remove_engine(app_instance: FastAPI) -> None:
@@ -91,10 +96,10 @@ async def remove_engine(app_instance: FastAPI) -> None:
 @asynccontextmanager
 async def lifespan(app_instance: FastAPI) -> AsyncGenerator:
     load_settings(app_instance)
+    await setup_db_engine(app_instance)
     setup_telegram_dispatcher(app_instance)
     setup_telegram_bot(app_instance)
     await setup_telegram_webhook(app_instance)
-    await setup_db_engine(app_instance)
     yield
     await remove_engine(app_instance)
 
