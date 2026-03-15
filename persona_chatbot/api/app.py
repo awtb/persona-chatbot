@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import URL
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from persona_chatbot.api.routers.internal import router as internal_router
 from persona_chatbot.api.routers.telegram import router as telegram_router
 from persona_chatbot.bot.app import build_dispatcher
 from persona_chatbot.db.session import build_session_maker
@@ -120,6 +121,7 @@ def setup_middlewares(app_instance: FastAPI) -> None:
 
 
 def setup_routers(app_instance: FastAPI) -> None:
+    app_instance.include_router(internal_router)
     app_instance.include_router(telegram_router)
 
 
