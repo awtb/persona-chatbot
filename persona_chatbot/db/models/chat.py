@@ -65,6 +65,10 @@ class Chat(HasID, HasCreatedAt, HasClosedAt, BaseModel):
         back_populates="chats",
         foreign_keys=[avatar_id],
     )
+    active_for_users: Mapped[list[User]] = relationship(
+        back_populates="active_chat",
+        foreign_keys="User.active_chat_id",
+    )
     messages: Mapped[list[Message]] = relationship(
         back_populates="chat",
         foreign_keys="Message.chat_id",
