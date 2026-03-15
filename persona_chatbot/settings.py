@@ -19,6 +19,7 @@ class Settings(BaseSettings):
 
     tg_bot_token: str
     tg_bot_webhook_url: str
+    tg_bot_webhook_token: str
 
     logging_mode: str = "plain"
     logging_lvl: str = "INFO"
