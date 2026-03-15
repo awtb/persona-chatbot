@@ -28,6 +28,17 @@ def upgrade() -> None:
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('users',
+    sa.Column('telegram_user_id', sa.BigInteger(), nullable=False),
+    sa.Column('current_avatar_id', sa.Uuid(), nullable=True),
+    sa.Column('active_chat_id', sa.Uuid(), nullable=True),
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['current_avatar_id'], ['avatars.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('telegram_user_id')
+    )
     op.create_table('chats',
     sa.Column('user_id', sa.Uuid(), nullable=False),
     sa.Column('avatar_id', sa.Uuid(), nullable=False),
@@ -44,17 +55,12 @@ def upgrade() -> None:
     op.create_index(op.f('ix_chats_avatar_id'), 'chats', ['avatar_id'], unique=False)
     op.create_index(op.f('ix_chats_user_id'), 'chats', ['user_id'], unique=False)
     op.create_index('ix_chats_user_id_status', 'chats', ['user_id', 'status'], unique=False)
-    op.create_table('users',
-    sa.Column('telegram_user_id', sa.BigInteger(), nullable=False),
-    sa.Column('current_avatar_id', sa.Uuid(), nullable=True),
-    sa.Column('active_chat_id', sa.Uuid(), nullable=True),
-    sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['active_chat_id'], ['chats.id'], ),
-    sa.ForeignKeyConstraint(['current_avatar_id'], ['avatars.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('telegram_user_id')
+    op.create_foreign_key(
+        'fk_users_active_chat_id_chats',
+        'users',
+        'chats',
+        ['active_chat_id'],
+        ['id'],
     )
     op.create_table('messages',
     sa.Column('chat_id', sa.Uuid(), nullable=False),
@@ -99,10 +105,11 @@ def downgrade() -> None:
     op.drop_index('ix_messages_chat_id_created_at', table_name='messages')
     op.drop_index(op.f('ix_messages_chat_id'), table_name='messages')
     op.drop_table('messages')
-    op.drop_table('users')
+    op.drop_constraint('fk_users_active_chat_id_chats', 'users', type_='foreignkey')
     op.drop_index('ix_chats_user_id_status', table_name='chats')
     op.drop_index(op.f('ix_chats_user_id'), table_name='chats')
     op.drop_index(op.f('ix_chats_avatar_id'), table_name='chats')
     op.drop_table('chats')
+    op.drop_table('users')
     op.drop_table('avatars')
     # ### end Alembic commands ###
