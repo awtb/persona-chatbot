@@ -4,9 +4,11 @@ from typing import Any
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
+from faststream.redis import RedisBroker
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from persona_chatbot.db.repos.chat import ChatRepo
+from persona_chatbot.db.repos.memory import MemoryFactRepo
 from persona_chatbot.db.repos.message import MessageRepo
 from persona_chatbot.llm.client import LLMClient
 from persona_chatbot.services.avatar import AvatarService
@@ -15,7 +17,11 @@ from persona_chatbot.settings import WorkerSettings
 
 
 class ChatDependenciesMiddleware(BaseMiddleware):
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        broker: RedisBroker,
+    ) -> None:
+        self._broker = broker
         self._llm_client: LLMClient | None = None
 
     @staticmethod
@@ -85,6 +91,11 @@ class ChatDependenciesMiddleware(BaseMiddleware):
             avatar_service=avatar_service,
             chat_repo=ChatRepo(session=session),
             message_repo=MessageRepo(session=session),
+            memory_fact_repo=MemoryFactRepo(session=session),
+            broker=self._broker,
             max_previous_messages=settings.llm_max_previous_messages,
+            memory_extract_after_turns_count=(
+                settings.memory_extract_after_turns_count
+            ),
         )
         return await handler(event, data)

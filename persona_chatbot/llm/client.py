@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from typing import TypeVar
 
 import structlog
 from openai import APIConnectionError
@@ -10,12 +11,14 @@ from openai.types.chat import ChatCompletionAssistantMessageParam
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.chat import ChatCompletionSystemMessageParam
 from openai.types.chat import ChatCompletionUserMessageParam
+from pydantic import BaseModel
 
 from persona_chatbot.common.enums import MessageRole
 from persona_chatbot.common.exceptions import LLMProviderError
 from persona_chatbot.dto.llm import LLMMessageDTO
 
 logger = structlog.get_logger(__name__)
+ResponseFormatT = TypeVar("ResponseFormatT", bound=BaseModel)
 
 
 class LLMClient:
@@ -45,6 +48,49 @@ class LLMClient:
             system_prompt=system_prompt,
             previous_messages=previous_messages,
         )
+
+    async def complete(
+        self,
+        *,
+        message: str,
+        system_prompt: str,
+        response_format: type[ResponseFormatT],
+        previous_messages: list[LLMMessageDTO] | None = None,
+    ) -> ResponseFormatT:
+        messages = self._build_messages(
+            message=message,
+            system_prompt=system_prompt,
+            previous_messages=previous_messages or [],
+        )
+        try:
+            response = await self._client.beta.chat.completions.parse(
+                model=self._model,
+                messages=messages,
+                response_format=response_format,
+            )
+        except (
+            APIConnectionError,
+            APIError,
+            APITimeoutError,
+            RateLimitError,
+        ) as e:
+            logger.warning(
+                "LLM provider request failed",
+                model=self._model,
+                error_type=type(e).__name__,
+            )
+            raise LLMProviderError() from e
+
+        parsed = response.choices[0].message.parsed
+        if parsed is None:
+            logger.warning(
+                "LLM structured response parsing failed",
+                model=self._model,
+                response_format=response_format.__name__,
+            )
+            raise LLMProviderError()
+
+        return parsed
 
     async def _stream_reply(
         self,

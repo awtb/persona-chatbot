@@ -1,6 +1,7 @@
 from aiogram import Dispatcher
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.types import BotCommand
+from faststream.redis import RedisBroker
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,6 +30,10 @@ def build_bot_commands() -> list[BotCommand]:
             command="reset",
             description="Start a new chat",
         ),
+        BotCommand(
+            command="avatars",
+            description="Choose another avatar",
+        ),
     ]
 
 
@@ -36,6 +41,7 @@ def build_dispatcher(
     session_maker: async_sessionmaker[AsyncSession],
     settings: WorkerSettings,
     redis: Redis,
+    broker: RedisBroker,
 ) -> Dispatcher:
     dp = Dispatcher(
         storage=RedisStorage(redis=redis),
@@ -53,7 +59,7 @@ def build_dispatcher(
         AvatarDependenciesMiddleware(),
     )
     dp.update.outer_middleware(
-        ChatDependenciesMiddleware(),
+        ChatDependenciesMiddleware(broker=broker),
     )
     dp.update.outer_middleware(
         CurrentUserProviderMiddleware(),

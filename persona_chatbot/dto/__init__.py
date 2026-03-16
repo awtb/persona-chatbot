@@ -6,6 +6,9 @@ from persona_chatbot.dto.chat import ChatDTO
 from persona_chatbot.dto.chat import ChatReplyStream
 from persona_chatbot.dto.chat import ChatUpdateDTO
 from persona_chatbot.dto.llm import LLMMessageDTO
+from persona_chatbot.dto.memory import MemoryFactCreateDTO
+from persona_chatbot.dto.memory import MemoryFactDTO
+from persona_chatbot.dto.memory import MemoryFactUpdateDTO
 from persona_chatbot.dto.message import MessageCreateDTO
 from persona_chatbot.dto.message import MessageDTO
 from persona_chatbot.dto.message import MessageUpdateDTO
@@ -22,6 +25,9 @@ __all__ = [
     "ChatReplyStream",
     "ChatUpdateDTO",
     "LLMMessageDTO",
+    "MemoryFactDTO",
+    "MemoryFactCreateDTO",
+    "MemoryFactUpdateDTO",
     "MessageDTO",
     "MessageCreateDTO",
     "MessageUpdateDTO",

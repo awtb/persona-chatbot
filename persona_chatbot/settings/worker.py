@@ -36,6 +36,7 @@ class WorkerSettings(RuntimeSettings):
     llm_model: str = "llama3.2"
     llm_timeout_sec: int = 25
     llm_max_previous_messages: int = 20
+    memory_extract_after_turns_count: int = 10
 
     @property
     def host(self) -> str:
