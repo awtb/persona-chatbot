@@ -15,6 +15,7 @@ from persona_chatbot.bot.middlewares import UserDependenciesMiddleware
 from persona_chatbot.bot.routers.avatar import router as avatar_router
 from persona_chatbot.bot.routers.chat import router as chat_router
 from persona_chatbot.bot.routers.onboarding import router as onboarding_router
+from persona_chatbot.bot.routers.reset import router as reset_router
 from persona_chatbot.settings import Settings
 
 
@@ -66,6 +67,9 @@ def build_dispatcher(
     )
     dp.include_router(
         avatar_router,
+    )
+    dp.include_router(
+        reset_router,
     )
     dp.include_router(
         chat_router,

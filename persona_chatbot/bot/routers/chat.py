@@ -4,13 +4,11 @@ from aiogram import F
 from aiogram import Router
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.filters import Command
 from aiogram.types import Message
 
 from persona_chatbot.bot.states import UserState
 from persona_chatbot.dto.user import UserDTO
 from persona_chatbot.services.chat import ChatService
-from persona_chatbot.services.user import UserService
 
 router = Router(name=__name__)
 
@@ -36,7 +34,7 @@ def _fit_for_telegram(
     return f"{text[: TELEGRAM_MAX_TEXT_LEN - 3]}..."
 
 
-async def _safe_edit_message(
+async def _send_final_message(
     message: Message,
     text: str,
 ) -> str:
@@ -54,7 +52,7 @@ async def _safe_edit_message(
     return normalized
 
 
-async def _send_message_draft(
+async def _send_reply_draft(
     message: Message,
     draft_id: int,
     text: str,
@@ -76,7 +74,7 @@ async def _send_message_draft(
     return normalized
 
 
-async def _stream_chat_reply(
+async def _stream_reply_draft(
     message: Message,
     draft_id: int,
     stream: AsyncIterable[str],
@@ -88,31 +86,13 @@ async def _stream_chat_reply(
             continue
 
         current_text += chunk
-        await _send_message_draft(
+        await _send_reply_draft(
             message=message,
             draft_id=draft_id,
             text=current_text,
         )
 
     return current_text.strip()
-
-
-@router.message(
-    UserState.chatting,
-    Command("reset"),
-)
-async def reset_chat_context(
-    message: Message,
-    current_user: UserDTO,
-    user_service: UserService,
-) -> None:
-    updated_user = await user_service.reset_chat_context(
-        current_user=current_user,
-    )
-    current_user.active_chat_id = updated_user.active_chat_id
-    await message.answer(
-        "Context cleared. Started a new chat with the current avatar.",
-    )
 
 
 @router.message(
@@ -133,14 +113,14 @@ async def chat_with_llm(
         current_user=current_user,
         message=message.text,
     )
-    final_text = await _stream_chat_reply(
+    final_text = await _stream_reply_draft(
         message=message,
         draft_id=draft_id,
         stream=stream,
     )
     if not final_text:
         final_text = "I could not generate a response right now."
-    await _safe_edit_message(
+    await _send_final_message(
         message=message,
         text=final_text,
     )
