@@ -1,16 +1,51 @@
 from aiogram import F
 from aiogram import Router
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
+from aiogram.types import Message
 
 from persona_chatbot.bot.callbacks import AVATAR_SELECT_CALLBACK_PREFIX
 from persona_chatbot.bot.callbacks import parse_avatar_select_callback_data
+from persona_chatbot.bot.keyboards import build_avatar_keyboard
 from persona_chatbot.bot.states import UserState
 from persona_chatbot.common.exceptions import AvatarNotFound
 from persona_chatbot.dto.user import UserDTO
 from persona_chatbot.services.user import UserService
 
 router = Router(name=__name__)
+
+
+async def show_avatar_selection(
+    message: Message,
+    user_service: UserService,
+    state: FSMContext,
+) -> None:
+    avatars = await user_service.list_available_avatars()
+    await state.set_state(UserState.choosing_avatar)
+    if not avatars:
+        await message.answer(
+            "No avatars are available yet. Please try again later.",
+        )
+        return
+
+    await message.answer(
+        "Please choose an avatar to start chatting:",
+        reply_markup=build_avatar_keyboard(avatars=avatars),
+    )
+
+
+@router.message(Command("avatars"))
+async def avatars(
+    message: Message,
+    user_service: UserService,
+    state: FSMContext,
+) -> None:
+    await show_avatar_selection(
+        message=message,
+        user_service=user_service,
+        state=state,
+    )
 
 
 @router.callback_query(
