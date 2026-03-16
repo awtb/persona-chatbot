@@ -38,12 +38,14 @@ class ChatService:
     ) -> ChatReplyStream:
         async def stream_with_fallback() -> AsyncIterator[str]:
             chat = await self._require_active_chat(current_user=current_user)
-            previous_messages = await self._load_generation_context(
-                chat=chat,
+            previous_messages = await self._load_previous_messages(
+                chat_id=chat.id,
+                limit=MAX_PREVIOUS_MESSAGES,
             )
-            chat = await self._save_user_message(
+            chat = await self._save_message(
                 chat=chat,
-                message=message,
+                role=MessageRole.USER,
+                content=message,
             )
             system_prompt = await self._avatar_service.resolve_system_prompt(
                 current_user=current_user,
@@ -57,9 +59,14 @@ class ChatService:
                 assistant_chunks.append(chunk)
                 yield chunk
 
-            await self._persist_assistant_message(
+            assistant_message = "".join(assistant_chunks).strip()
+            if not assistant_message:
+                return
+
+            await self._save_message(
                 chat=chat,
-                chunks=assistant_chunks,
+                role=MessageRole.ASSISTANT,
+                content=assistant_message,
             )
 
         return ChatReplyStream(chunks=stream_with_fallback())
@@ -73,26 +80,6 @@ class ChatService:
 
         return await self._chat_repo.get(
             chat_id=current_user.active_chat_id,
-        )
-
-    async def _load_generation_context(
-        self,
-        chat: ChatDTO,
-    ) -> list[LLMMessageDTO]:
-        return await self._load_previous_messages(
-            chat_id=chat.id,
-            limit=MAX_PREVIOUS_MESSAGES,
-        )
-
-    async def _save_user_message(
-        self,
-        chat: ChatDTO,
-        message: str,
-    ) -> ChatDTO:
-        return await self._save_message(
-            chat=chat,
-            role=MessageRole.USER,
-            content=message,
         )
 
     async def _load_previous_messages(
@@ -159,18 +146,3 @@ class ChatService:
                 yield chunk
         except Exception:
             yield FALLBACK_RESPONSE
-
-    async def _persist_assistant_message(
-        self,
-        chat: ChatDTO,
-        chunks: list[str],
-    ) -> None:
-        assistant_message = "".join(chunks).strip()
-        if not assistant_message:
-            return
-
-        await self._save_message(
-            chat=chat,
-            role=MessageRole.ASSISTANT,
-            content=assistant_message,
-        )
