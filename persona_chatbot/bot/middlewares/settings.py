@@ -5,13 +5,13 @@ from typing import Any
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
-from persona_chatbot.settings import Settings
+from persona_chatbot.settings import WorkerSettings
 
 
 class SettingsProviderMiddleware(BaseMiddleware):
     def __init__(
         self,
-        settings: Settings,
+        settings: WorkerSettings,
     ) -> None:
         self._settings = settings
 

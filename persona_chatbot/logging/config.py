@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from logging.config import dictConfig
 from typing import Any
 
 import structlog
@@ -111,6 +112,16 @@ def build_logging_config(settings: Any) -> dict[str, Any]:
                 "level": level,
                 "propagate": False,
             },
+            "faststream": {
+                "handlers": ["stdout"],
+                "level": level,
+                "propagate": False,
+            },
+            "faststream.access.redis": {
+                "handlers": ["stdout"],
+                "level": level,
+                "propagate": False,
+            },
             "uvicorn": {
                 "handlers": ["stdout"],
                 "level": level,
@@ -129,6 +140,12 @@ def build_logging_config(settings: Any) -> dict[str, Any]:
             },
         },
     }
+
+
+def configure_logging(settings: Any) -> dict[str, Any]:
+    log_config = build_logging_config(settings)
+    dictConfig(log_config)
+    return log_config
 
 
 def _add_message_field(

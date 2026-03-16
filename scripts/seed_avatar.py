@@ -49,9 +49,9 @@ async def seed_avatar(
 ) -> None:
     from persona_chatbot.db.models.avatar import Avatar
     from persona_chatbot.db.session import build_session_maker
-    from persona_chatbot.settings import get_settings
+    from persona_chatbot.settings import get_worker_settings
 
-    settings = get_settings()
+    settings = get_worker_settings()
     db_url = URL.create(
         drivername=settings.db_driver,
         username=settings.db_user,

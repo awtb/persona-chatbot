@@ -5,39 +5,20 @@ from ipaddress import IPv4Network
 from ipaddress import IPv6Address
 from ipaddress import IPv6Network
 
-from aiogram import Bot
-from aiogram import Dispatcher
 from fastapi import Depends
 from fastapi import Header
 from fastapi import HTTPException
 from fastapi import Request
 from fastapi import status
+from faststream.redis import RedisBroker
 
 from persona_chatbot.api.dependencies.common import get_settings
-from persona_chatbot.settings import Settings
+from persona_chatbot.settings import ApiSettings
 
 TELEGRAM_TRUSTED_NETWORKS = [
     "149.154.160.0/20",
     "91.108.4.0/22",
 ]
-
-
-def get_dispatcher(
-    request: Request,
-) -> Dispatcher:
-    """
-    Returns initialized `Dispatcher` object
-    :return:
-    """
-    return request.app.state.dispatcher
-
-
-def get_bot(request: Request) -> Bot:
-    """
-    Returns initialized `Bot` object
-    :return:
-    """
-    return request.app.state.bot
 
 
 def cidr(src: str) -> Callable[[str], bool]:
@@ -87,7 +68,7 @@ def validate_tg_webhook_token(
     secret_token: str = Header(
         validation_alias="X-Telegram-Bot-Api-Secret-Token",
     ),
-    settings: Settings = Depends(get_settings),
+    settings: ApiSettings = Depends(get_settings),
 ) -> None:
     if settings.tg_bot_webhook_token != secret_token:
         raise HTTPException(
@@ -96,9 +77,5 @@ def validate_tg_webhook_token(
         )
 
 
-def get_telegram_bot(request: Request) -> Bot:
-    return request.app.state.tg_bot
-
-
-def get_telegram_dispatcher(request: Request) -> Dispatcher:
-    return request.app.state.tg_dispatcher
+def get_telegram_updates_broker(request: Request) -> RedisBroker:
+    return request.app.state.tg_updates_broker

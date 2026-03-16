@@ -11,7 +11,7 @@ from persona_chatbot.db.repos.message import MessageRepo
 from persona_chatbot.llm.client import LLMClient
 from persona_chatbot.services.avatar import AvatarService
 from persona_chatbot.services.chat import ChatService
-from persona_chatbot.settings import Settings
+from persona_chatbot.settings import WorkerSettings
 
 
 class ChatDependenciesMiddleware(BaseMiddleware):
@@ -21,12 +21,14 @@ class ChatDependenciesMiddleware(BaseMiddleware):
     @staticmethod
     def _require_settings(
         data: dict[str, Any],
-    ) -> Settings:
+    ) -> WorkerSettings:
         settings = data.get("settings")
-        if not isinstance(settings, Settings):
+        if not isinstance(settings, WorkerSettings):
             msg = (
-                "ChatDependenciesMiddleware requires Settings in context. "
-                "Ensure SettingsProviderMiddleware is registered before it."
+                "ChatDependenciesMiddleware requires "
+                "WorkerSettings in context. Ensure "
+                "SettingsProviderMiddleware is registered "
+                "before it."
             )
             raise RuntimeError(msg)
 
@@ -67,8 +69,8 @@ class ChatDependenciesMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: dict[str, Any],
     ) -> Any:
+        settings = self._require_settings(data=data)
         if self._llm_client is None:
-            settings = self._require_settings(data=data)
             self._llm_client = LLMClient(
                 api_key=settings.llm_provider_api_key,
                 base_url=settings.llm_provider_base_url,

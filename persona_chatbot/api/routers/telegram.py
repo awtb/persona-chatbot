@@ -1,17 +1,16 @@
-import asyncio
-
-import structlog
-from aiogram import Bot
-from aiogram import Dispatcher
 from fastapi import APIRouter
 from fastapi import Depends
+from fastapi import Request
+from fastapi import status
+from faststream.redis import RedisBroker
 
-from persona_chatbot.api.dependencies.telegram import get_telegram_bot
-from persona_chatbot.api.dependencies.telegram import get_telegram_dispatcher
+from persona_chatbot.api.dependencies.telegram import (
+    get_telegram_updates_broker,
+)
 from persona_chatbot.api.dependencies.telegram import validate_tg_request
 from persona_chatbot.api.dependencies.telegram import validate_tg_webhook_token
-
-logger = structlog.get_logger(__name__)
+from persona_chatbot.schemas import TelegramUpdateTaskSchema
+from persona_chatbot.worker.queues import TELEGRAM_UPDATES_QUEUE
 
 router = APIRouter(
     tags=["Telegram"],
@@ -25,30 +24,18 @@ router = APIRouter(
 )
 
 
-async def _process_update_in_background(
+@router.post("", status_code=status.HTTP_202_ACCEPTED)
+async def process_telegram_update(
     update: dict,
-    bot: Bot,
-    dispatcher: Dispatcher,
+    request: Request,
+    broker: RedisBroker = Depends(get_telegram_updates_broker),
 ) -> None:
-    try:
-        await dispatcher.feed_raw_update(
-            bot=bot,
-            update=update,
-        )
-    except Exception as e:
-        logger.exception("Failed to handle update", exc_info=e)
-
-
-@router.post("")
-async def proces_telegram_update(
-    update: dict,
-    bot: Bot = Depends(get_telegram_bot),
-    dispatcher: Dispatcher = Depends(get_telegram_dispatcher),
-) -> None:
-    asyncio.create_task(
-        _process_update_in_background(
-            update=update,
-            bot=bot,
-            dispatcher=dispatcher,
-        ),
+    payload = TelegramUpdateTaskSchema(
+        request_id=request.state.request_id,
+        update=update,
+    )
+    await broker.publish(
+        payload.model_dump(mode="json"),
+        list=TELEGRAM_UPDATES_QUEUE,
+        correlation_id=request.state.request_id,
     )

@@ -16,7 +16,7 @@ from persona_chatbot.bot.routers.avatar import router as avatar_router
 from persona_chatbot.bot.routers.chat import router as chat_router
 from persona_chatbot.bot.routers.onboarding import router as onboarding_router
 from persona_chatbot.bot.routers.reset import router as reset_router
-from persona_chatbot.settings import Settings
+from persona_chatbot.settings import WorkerSettings
 
 
 def build_bot_commands() -> list[BotCommand]:
@@ -34,7 +34,7 @@ def build_bot_commands() -> list[BotCommand]:
 
 def build_dispatcher(
     session_maker: async_sessionmaker[AsyncSession],
-    settings: Settings,
+    settings: WorkerSettings,
     redis: Redis,
 ) -> Dispatcher:
     dp = Dispatcher(

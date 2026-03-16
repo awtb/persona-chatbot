@@ -1,9 +1,9 @@
 from fastapi import Request
 
-from persona_chatbot.settings import Settings
+from persona_chatbot.settings import ApiSettings
 
 
 def get_settings(
     request: Request,
-) -> Settings:
+) -> ApiSettings:
     return request.app.state.settings
