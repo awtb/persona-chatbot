@@ -1,3 +1,5 @@
+import asyncio
+
 import structlog
 from aiogram import Bot
 from aiogram import Dispatcher
@@ -23,11 +25,10 @@ router = APIRouter(
 )
 
 
-@router.post("")
-async def proces_telegram_update(
+async def _process_update_in_background(
     update: dict,
-    bot: Bot = Depends(get_telegram_bot),
-    dispatcher: Dispatcher = Depends(get_telegram_dispatcher),
+    bot: Bot,
+    dispatcher: Dispatcher,
 ) -> None:
     try:
         await dispatcher.feed_raw_update(
@@ -36,3 +37,18 @@ async def proces_telegram_update(
         )
     except Exception as e:
         logger.exception("Failed to handle update", exc_info=e)
+
+
+@router.post("")
+async def proces_telegram_update(
+    update: dict,
+    bot: Bot = Depends(get_telegram_bot),
+    dispatcher: Dispatcher = Depends(get_telegram_dispatcher),
+) -> None:
+    asyncio.create_task(
+        _process_update_in_background(
+            update=update,
+            bot=bot,
+            dispatcher=dispatcher,
+        ),
+    )

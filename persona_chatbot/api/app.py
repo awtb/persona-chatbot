@@ -6,11 +6,13 @@ import structlog
 from aiogram import Bot
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from redis.asyncio import Redis
 from sqlalchemy import URL
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from persona_chatbot.api.routers.internal import router as internal_router
 from persona_chatbot.api.routers.telegram import router as telegram_router
+from persona_chatbot.bot.app import build_bot_commands
 from persona_chatbot.bot.app import build_dispatcher
 from persona_chatbot.db.session import build_session_maker
 from persona_chatbot.logging.config import build_logging_config
@@ -31,14 +33,31 @@ def load_settings(app_instance: FastAPI) -> Settings:
 
 def setup_telegram_dispatcher(app_instance: FastAPI) -> None:
     session_maker = app_instance.state.session_maker
+    settings: Settings = app_instance.state.settings
+    redis = Redis(
+        host=settings.redis_host,
+        port=settings.redis_port,
+        db=settings.redis_db,
+        username=settings.redis_username,
+        password=settings.redis_password,
+    )
     app_instance.state.tg_dispatcher = build_dispatcher(
         session_maker=session_maker,
+        settings=settings,
+        redis=redis,
     )
 
 
 def setup_telegram_bot(app_instance: FastAPI) -> None:
     app_instance.state.tg_bot = Bot(
         token=app_instance.state.settings.tg_bot_token,
+    )
+
+
+async def setup_telegram_commands(app_instance: FastAPI) -> None:
+    bot: Bot = app_instance.state.tg_bot
+    await bot.set_my_commands(
+        commands=build_bot_commands(),
     )
 
 
@@ -90,6 +109,12 @@ async def setup_db_engine(app_instance: FastAPI) -> None:
     app_instance.state.session_maker = build_session_maker(engine=engine)
 
 
+async def remove_telegram_dispatcher(
+    app_instance: FastAPI,
+) -> None:
+    await app_instance.state.tg_dispatcher.storage.close()
+
+
 async def remove_engine(app_instance: FastAPI) -> None:
     await app_instance.state.engine.dispose()
 
@@ -100,8 +125,10 @@ async def lifespan(app_instance: FastAPI) -> AsyncGenerator:
     await setup_db_engine(app_instance)
     setup_telegram_dispatcher(app_instance)
     setup_telegram_bot(app_instance)
+    await setup_telegram_commands(app_instance)
     await setup_telegram_webhook(app_instance)
     yield
+    await remove_telegram_dispatcher(app_instance)
     await remove_engine(app_instance)
 
 
