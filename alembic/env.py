@@ -16,7 +16,6 @@ config = context.config
 from persona_chatbot.settings import get_settings
 from persona_chatbot.db.models import BaseModel
 
-
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 

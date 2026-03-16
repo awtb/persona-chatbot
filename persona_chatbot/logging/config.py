@@ -3,7 +3,6 @@ from typing import Any
 
 import structlog
 
-
 StructlogProcessor = Callable[[Any, str, dict[str, Any]], dict[str, Any]]
 
 

@@ -3,6 +3,7 @@ from uuid import UUID
 
 from persona_chatbot.common.enums import MessageRole
 from persona_chatbot.common.exceptions import ActiveChatNotSelected
+from persona_chatbot.common.exceptions import LLMProviderError
 from persona_chatbot.db.repos.chat import ChatRepo
 from persona_chatbot.db.repos.message import MessageRepo
 from persona_chatbot.dto.chat import ChatDTO
@@ -145,5 +146,5 @@ class ChatService:
                 previous_messages=previous_messages,
             ):
                 yield chunk
-        except Exception:
+        except LLMProviderError:
             yield FALLBACK_RESPONSE
