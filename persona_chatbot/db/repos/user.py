@@ -50,5 +50,6 @@ class UserRepo(BaseRepository):
 
         apply_user_update_dto(user=user, dto=dto)
         await self._session.flush()
+        await self._session.refresh(user)
 
         return to_user_dto(user)
