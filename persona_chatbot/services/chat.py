@@ -15,7 +15,6 @@ from persona_chatbot.llm.client import LLMClient
 from persona_chatbot.services.avatar import AvatarService
 
 FALLBACK_RESPONSE = "I could not generate a response right now."
-MAX_PREVIOUS_MESSAGES = 20
 
 
 class ChatService:
@@ -25,11 +24,13 @@ class ChatService:
         avatar_service: AvatarService,
         chat_repo: ChatRepo,
         message_repo: MessageRepo,
+        max_previous_messages: int,
     ) -> None:
         self._llm_client = llm_client
         self._avatar_service = avatar_service
         self._chat_repo = chat_repo
         self._message_repo = message_repo
+        self._max_previous_messages = max_previous_messages
 
     def stream_reply_to_message(
         self,
@@ -40,7 +41,7 @@ class ChatService:
             chat = await self._require_active_chat(current_user=current_user)
             previous_messages = await self._load_previous_messages(
                 chat_id=chat.id,
-                limit=MAX_PREVIOUS_MESSAGES,
+                limit=self._max_previous_messages,
             )
             chat = await self._save_message(
                 chat=chat,

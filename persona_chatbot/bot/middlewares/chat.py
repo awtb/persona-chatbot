@@ -73,6 +73,7 @@ class ChatDependenciesMiddleware(BaseMiddleware):
                 api_key=settings.llm_provider_api_key,
                 base_url=settings.llm_provider_base_url,
                 model=settings.llm_model,
+                timeout_sec=settings.llm_timeout_sec,
             )
         session = self._require_session(data=data)
         avatar_service = self._require_avatar_service(data=data)
@@ -82,5 +83,6 @@ class ChatDependenciesMiddleware(BaseMiddleware):
             avatar_service=avatar_service,
             chat_repo=ChatRepo(session=session),
             message_repo=MessageRepo(session=session),
+            max_previous_messages=settings.llm_max_previous_messages,
         )
         return await handler(event, data)

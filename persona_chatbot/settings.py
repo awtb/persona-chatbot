@@ -43,6 +43,8 @@ class Settings(BaseSettings):
         ),
     )
     llm_model: str = "llama3.2"
+    llm_timeout_sec: int = 25
+    llm_max_previous_messages: int = 20
 
     logging_mode: str = "plain"
     logging_lvl: str = "INFO"

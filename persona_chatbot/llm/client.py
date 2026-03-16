@@ -1,4 +1,3 @@
-import os
 from collections.abc import AsyncIterator
 
 import structlog
@@ -20,15 +19,14 @@ class LLMClient:
         api_key: str,
         base_url: str,
         model: str,
+        timeout_sec: int,
     ) -> None:
         self._base_url = base_url
         self._model = model
-        self._client: AsyncOpenAI
-        if api_key:
-            os.environ["OPENAI_API_KEY"] = api_key
         self._client = AsyncOpenAI(
+            api_key=api_key,
             base_url=base_url,
-            timeout=25,
+            timeout=timeout_sec,
         )
 
     def stream_reply(
