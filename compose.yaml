@@ -4,11 +4,35 @@ services:
       context: .
       dockerfile: Dockerfile
     depends_on:
-      - db
       - redis
     command: ["uv", "run", "make", "prod"]
     ports:
       - ${SERVING_PORT:-8000}:${SERVING_PORT:-8000}
+    environment:
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_DB: ${REDIS_DB:-0}
+      SERVING_HOST: ${SERVING_HOST:-0.0.0.0}
+      SERVING_PORT: ${SERVING_PORT:-8000}
+      SERVING_PROCESSES_COUNT: ${SERVING_PROCESSES_COUNT:-1}
+      TG_BOT_TOKEN: ${TG_BOT_TOKEN}
+      TG_BOT_WEBHOOK_URL: ${TG_BOT_WEBHOOK_URL}
+      TG_BOT_WEBHOOK_TOKEN: ${TG_BOT_WEBHOOK_TOKEN}
+      LOGGING_MODE: ${LOGGING_MODE:-plain}
+      LOGGING_LVL: ${LOGGING_LVL:-}
+      SERVICE_NAME: ${SERVICE_NAME:-persona-chatbot-api}
+      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-}
+      CORS_ALLOW_HEADERS: ${CORS_ALLOW_HEADERS:-}
+      CORS_ALLOW_METHODS: ${CORS_ALLOW_METHODS:-}
+      CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS:-}
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+      - redis
+    command: ["uv", "run", "python", "-m", "persona_chatbot", "worker"]
     environment:
       DB_USER: ${DB_USER:-persona_chatbot}
       DB_PASSWORD: ${DB_PASSWORD:-persona_chatbot}
@@ -18,22 +42,16 @@ services:
       REDIS_HOST: ${REDIS_HOST:-redis}
       REDIS_PORT: ${REDIS_PORT:-6379}
       REDIS_DB: ${REDIS_DB:-0}
-      REDIS_USERNAME: ${REDIS_USERNAME:-}
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
-      SERVING_HOST: ${SERVING_HOST:-0.0.0.0}
-      SERVING_PORT: ${SERVING_PORT:-8000}
-      SERVING_WORKERS_COUNT: ${SERVING_WORKERS_COUNT:-1}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      JWT_HASHING_ALGORITHM: ${JWT_HASHING_ALGORITHM:-HS256}
-      JWT_ACCESS_TOKEN_EXPIRATION_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES:-30}
-      JWT_REFRESH_TOKEN_EXPIRATION_MINUTES: ${JWT_REFRESH_TOKEN_EXPIRATION_MINUTES:-80}
+      WORKER_HOST: ${WORKER_HOST:-0.0.0.0}
+      WORKER_PORT: ${WORKER_PORT:-8001}
+      WORKER_PROCESSES_COUNT: ${WORKER_PROCESSES_COUNT:-1}
+      TG_BOT_TOKEN: ${TG_BOT_TOKEN}
+      LLM_PROVIDER_API_KEY: ${LLM_PROVIDER_API_KEY:-ollama}
+      LLM_PROVIDER_BASE_URL: ${LLM_PROVIDER_BASE_URL:-http://localhost:11434/v1}
+      LLM_MODEL: ${LLM_MODEL:-llama3.2}
       LOGGING_MODE: ${LOGGING_MODE:-plain}
       LOGGING_LVL: ${LOGGING_LVL:-}
-      SERVICE_NAME: ${SERVICE_NAME:-persona-chatbot}
-      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-}
-      CORS_ALLOW_HEADERS: ${CORS_ALLOW_HEADERS:-}
-      CORS_ALLOW_METHODS: ${CORS_ALLOW_METHODS:-}
-      CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS:-}
+      SERVICE_NAME: ${SERVICE_NAME:-persona-chatbot-worker}
   db:
     image: postgres:17
     volumes:
