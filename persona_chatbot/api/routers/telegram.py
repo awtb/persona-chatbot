@@ -7,7 +7,6 @@ from faststream.redis import RedisBroker
 from persona_chatbot.api.dependencies.telegram import (
     get_telegram_updates_broker,
 )
-from persona_chatbot.api.dependencies.telegram import validate_tg_request
 from persona_chatbot.api.dependencies.telegram import validate_tg_webhook_token
 from persona_chatbot.schemas import TelegramUpdateTaskSchema
 from persona_chatbot.worker.queues import TELEGRAM_UPDATES_QUEUE
@@ -16,7 +15,6 @@ router = APIRouter(
     tags=["Telegram"],
     prefix="/telegram",
     dependencies=[
-        Depends(validate_tg_request),
         Depends(
             validate_tg_webhook_token,
         ),
