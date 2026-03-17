@@ -19,7 +19,6 @@ from persona_chatbot.db.models.mixins import HasID
 if TYPE_CHECKING:
     from persona_chatbot.db.models.avatar import Avatar
     from persona_chatbot.db.models.chat import Chat
-    from persona_chatbot.db.models.message import Message
     from persona_chatbot.db.models.user import User
 
 
@@ -57,10 +56,6 @@ class MemoryFact(HasID, HasCreatedAt, BaseModel):
         ForeignKey("chats.id"),
         nullable=True,
     )
-    source_message_id: Mapped[UUID | None] = mapped_column(
-        ForeignKey("messages.id"),
-        nullable=True,
-    )
 
     user: Mapped[User] = relationship(
         back_populates="memory_facts",
@@ -72,8 +67,4 @@ class MemoryFact(HasID, HasCreatedAt, BaseModel):
     source_chat: Mapped[Chat | None] = relationship(
         back_populates="memory_facts",
         foreign_keys=[source_chat_id],
-    )
-    source_message: Mapped[Message | None] = relationship(
-        back_populates="memory_facts",
-        foreign_keys=[source_message_id],
     )

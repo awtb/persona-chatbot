@@ -54,7 +54,6 @@ class MemoryFactRepo(BaseRepository):
             fact_text=dto.fact_text,
             fact_key=dto.fact_key,
             source_chat_id=dto.source_chat_id,
-            source_message_id=dto.source_message_id,
         )
         self._session.add(memory_fact)
         await self._session.flush()
@@ -75,7 +74,6 @@ class MemoryFactRepo(BaseRepository):
                 "fact_text": dto.fact_text,
                 "fact_key": dto.fact_key,
                 "source_chat_id": dto.source_chat_id,
-                "source_message_id": dto.source_message_id,
             }
             for dto in dtos
         ]
@@ -85,7 +83,6 @@ class MemoryFactRepo(BaseRepository):
             set_={
                 "fact_text": stmt.excluded.fact_text,
                 "source_chat_id": stmt.excluded.source_chat_id,
-                "source_message_id": stmt.excluded.source_message_id,
             },
         )
         query = select(MemoryFact).from_statement(stmt.returning(MemoryFact))

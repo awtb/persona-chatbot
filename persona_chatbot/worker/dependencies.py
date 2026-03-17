@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from persona_chatbot.db.repos.chat import ChatRepo
 from persona_chatbot.db.repos.memory import MemoryFactRepo
-from persona_chatbot.db.repos.message import MessageRepo
 from persona_chatbot.llm.client import LLMClient
 from persona_chatbot.services.memory import MemoryService
 from persona_chatbot.worker.lifecycle import LLM_CLIENT_CONTEXT_KEY
@@ -34,7 +33,6 @@ async def get_memory_service(
 ) -> MemoryService:
     return MemoryService(
         chat_repo=ChatRepo(session=session),
-        message_repo=MessageRepo(session=session),
         memory_fact_repo=MemoryFactRepo(session=session),
         llm_client=llm_client,
     )

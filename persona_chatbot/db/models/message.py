@@ -18,7 +18,6 @@ from persona_chatbot.db.models.mixins import HasID
 
 if TYPE_CHECKING:
     from persona_chatbot.db.models.chat import Chat
-    from persona_chatbot.db.models.memory_fact import MemoryFact
 
 
 TBL_ARGS = (Index("ix_messages_chat_id_created_at", "chat_id", "created_at"),)
@@ -45,8 +44,4 @@ class Message(HasID, HasCreatedAt, BaseModel):
     chat: Mapped[Chat] = relationship(
         back_populates="messages",
         foreign_keys=[chat_id],
-    )
-    memory_facts: Mapped[list[MemoryFact]] = relationship(
-        back_populates="source_message",
-        foreign_keys="MemoryFact.source_message_id",
     )

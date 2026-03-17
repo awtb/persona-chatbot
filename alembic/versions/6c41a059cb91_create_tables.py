@@ -140,7 +140,6 @@ def upgrade() -> None:
         sa.Column("fact_text", sa.Text(), nullable=False),
         sa.Column("fact_key", sa.String(length=255), nullable=False),
         sa.Column("source_chat_id", sa.Uuid(), nullable=True),
-        sa.Column("source_message_id", sa.Uuid(), nullable=True),
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column(
             "created_at",
@@ -155,10 +154,6 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["source_chat_id"],
             ["chats.id"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["source_message_id"],
-            ["messages.id"],
         ),
         sa.ForeignKeyConstraint(
             ["user_id"],

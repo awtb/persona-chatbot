@@ -94,8 +94,5 @@ class ChatDependenciesMiddleware(BaseMiddleware):
             memory_fact_repo=MemoryFactRepo(session=session),
             broker=self._broker,
             max_previous_messages=settings.llm_max_previous_messages,
-            memory_extract_after_turns_count=(
-                settings.memory_extract_after_turns_count
-            ),
         )
         return await handler(event, data)

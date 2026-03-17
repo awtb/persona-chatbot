@@ -37,7 +37,7 @@ class WorkerSettings(RuntimeSettings):
     llm_timeout_sec: int = 25
     llm_max_previous_messages: int = 20
     telegram_updates_max_workers: int = Field(default=12, ge=1)
-    memory_extract_after_turns_count: int = 10
+    memory_extract_max_workers: int = Field(default=4, ge=1)
 
     @property
     def host(self) -> str:

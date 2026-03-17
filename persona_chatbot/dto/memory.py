@@ -13,7 +13,6 @@ class MemoryFactDTO(BaseDTO):
     fact_text: str
     fact_key: str
     source_chat_id: UUID | None
-    source_message_id: UUID | None
     created_at: datetime
 
 
@@ -24,7 +23,6 @@ class MemoryFactCreateDTO(BaseDTO):
     fact_text: str
     fact_key: str
     source_chat_id: UUID | None = None
-    source_message_id: UUID | None = None
 
 
 @dataclass
@@ -34,4 +32,3 @@ class MemoryFactUpdateDTO(BaseDTO):
     fact_text: str
     fact_key: str
     source_chat_id: UUID | None
-    source_message_id: UUID | None

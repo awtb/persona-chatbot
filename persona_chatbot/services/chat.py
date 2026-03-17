@@ -44,7 +44,6 @@ class ChatService:
         memory_fact_repo: MemoryFactRepo,
         broker: RedisBroker,
         max_previous_messages: int,
-        memory_extract_after_turns_count: int,
     ) -> None:
         self._llm_client = llm_client
         self._avatar_service = avatar_service
@@ -53,7 +52,6 @@ class ChatService:
         self._memory_fact_repo = memory_fact_repo
         self._broker = broker
         self._max_previous_messages = max_previous_messages
-        self._memory_turn_interval = memory_extract_after_turns_count
 
     def stream_reply_to_message(
         self,
@@ -66,7 +64,7 @@ class ChatService:
                 chat_id=chat.id,
                 limit=self._max_previous_messages,
             )
-            chat = await self._save_message(
+            chat, user_message = await self._save_message(
                 chat=chat,
                 role=MessageRole.USER,
                 content=message,
@@ -83,19 +81,20 @@ class ChatService:
                 assistant_chunks.append(chunk)
                 yield chunk
 
-            assistant_message = "".join(assistant_chunks).strip()
-            if not assistant_message:
+            assistant_message_text = "".join(assistant_chunks).strip()
+            if not assistant_message_text:
                 return
 
-            chat = await self._save_message(
+            chat, assistant_message = await self._save_message(
                 chat=chat,
                 role=MessageRole.ASSISTANT,
-                content=assistant_message,
+                content=assistant_message_text,
             )
 
             await self._maybe_enqueue_extract_fact_task(
-                chat,
-                user_message=message,
+                chat=chat,
+                user_message=user_message,
+                assistant_message=assistant_message,
             )
 
         return ChatReplyStream(chunks=stream_with_fallback())
@@ -132,18 +131,19 @@ class ChatService:
     async def _maybe_enqueue_extract_fact_task(
         self,
         chat: ChatDTO,
-        user_message: str,
+        user_message: MessageDTO,
+        assistant_message: MessageDTO,
     ) -> None:
-        if self._memory_turn_interval <= 0:
+        if len(user_message.content.strip()) <= MIN_MEMORY_SOURCE_MESSAGE_LEN:
             return
 
-        if len(user_message.strip()) <= MIN_MEMORY_SOURCE_MESSAGE_LEN:
-            return
-
-        if chat.completed_turn_count % self._memory_turn_interval != 0:
-            return
-
-        payload = ExtractMemoryFactsTaskSchema(chat_id=chat.id)
+        payload = ExtractMemoryFactsTaskSchema(
+            chat_id=chat.id,
+            user_message_id=user_message.id,
+            assistant_message_id=assistant_message.id,
+            user_message_text=user_message.content,
+            assistant_message_text=assistant_message.content,
+        )
         await self._broker.publish(
             payload.model_dump(mode="json"),
             list=EXTRACT_MEMORY_FACTS_QUEUE,
@@ -238,8 +238,8 @@ class ChatService:
         chat: ChatDTO,
         role: MessageRole,
         content: str,
-    ) -> ChatDTO:
-        await self._message_repo.create(
+    ) -> tuple[ChatDTO, MessageDTO]:
+        message = await self._message_repo.create(
             dto=MessageCreateDTO(
                 chat_id=chat.id,
                 role=role,
@@ -261,9 +261,9 @@ class ChatService:
             ),
         )
         if updated_chat is None:
-            return chat
+            return chat, message
 
-        return updated_chat
+        return updated_chat, message
 
     async def _stream_assistant_chunks(
         self,
