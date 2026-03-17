@@ -48,12 +48,13 @@ class UserService:
         self,
         current_user: UserDTO,
         avatar_id: UUID,
-    ) -> UserDTO:
-        await self._avatar_repo.get(avatar_id=avatar_id)
-        return await self._start_new_chat(
+    ) -> AvatarDTO:
+        avatar = await self._avatar_repo.get(avatar_id=avatar_id)
+        await self._start_new_chat(
             current_user=current_user,
             avatar_id=avatar_id,
         )
+        return avatar
 
     async def reset_chat_context(
         self,

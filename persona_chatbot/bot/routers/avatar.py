@@ -1,5 +1,6 @@
 from aiogram import F
 from aiogram import Router
+from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
@@ -12,8 +13,10 @@ from persona_chatbot.bot.states import UserState
 from persona_chatbot.common.exceptions import AvatarNotFound
 from persona_chatbot.dto.user import UserDTO
 from persona_chatbot.services.user import UserService
+from persona_chatbot.templates import Renderer
 
 router = Router(name=__name__)
+AVATAR_SELECTED_TEMPLATE = "bot/avatar_selected.jinja2"
 
 
 async def show_avatar_selection(
@@ -69,7 +72,7 @@ async def select_avatar(
         return
 
     try:
-        await user_service.select_avatar(
+        avatar = await user_service.select_avatar(
             current_user=current_user,
             avatar_id=avatar_id,
         )
@@ -83,6 +86,11 @@ async def select_avatar(
     await state.set_state(UserState.chatting)
     await callback_query.answer("Avatar selected.")
     if callback_query.message is not None:
+        text = await Renderer.render(
+            AVATAR_SELECTED_TEMPLATE,
+            avatar=avatar,
+        )
         await callback_query.message.answer(
-            "Avatar selected. Send a message to start chatting.",
+            text,
+            parse_mode=ParseMode.HTML,
         )
