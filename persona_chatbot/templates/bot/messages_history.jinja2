@@ -1,0 +1,10 @@
+{% if not messages %}
+Current chat is empty.
+{% else %}
+Last 10 messages:
+
+{% for message in messages %}
+{{ loop.index }}. {% if message.role is sameas MessageRole.USER %}<b>User</b>{% else %}<b>Assistant</b>{% endif %}: <i>{{ message.content }}</i>
+
+{% endfor %}
+{% endif %}

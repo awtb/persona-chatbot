@@ -9,11 +9,7 @@ from persona_chatbot.services.user import UserService
 router = Router(name=__name__)
 
 
-@router.message(
-    UserState.chatting,
-    Command("reset"),
-)
-async def reset_chat_context(
+async def perform_reset(
     message: Message,
     current_user: UserDTO,
     user_service: UserService,
@@ -24,4 +20,20 @@ async def reset_chat_context(
     current_user.active_chat_id = updated_user.active_chat_id
     await message.answer(
         "Context cleared. Started a new chat with the current avatar.",
+    )
+
+
+@router.message(
+    UserState.chatting,
+    Command("reset"),
+)
+async def reset_chat_context(
+    message: Message,
+    current_user: UserDTO,
+    user_service: UserService,
+) -> None:
+    await perform_reset(
+        message=message,
+        current_user=current_user,
+        user_service=user_service,
     )

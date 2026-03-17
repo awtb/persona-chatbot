@@ -16,6 +16,7 @@ from persona_chatbot.dto.chat import ChatUpdateDTO
 from persona_chatbot.dto.llm import LLMMessageDTO
 from persona_chatbot.dto.memory import MemoryFactDTO
 from persona_chatbot.dto.message import MessageCreateDTO
+from persona_chatbot.dto.message import MessageDTO
 from persona_chatbot.dto.user import UserDTO
 from persona_chatbot.llm.client import LLMClient
 from persona_chatbot.schemas import ExtractMemoryFactsTaskSchema
@@ -96,6 +97,17 @@ class ChatService:
             )
 
         return ChatReplyStream(chunks=stream_with_fallback())
+
+    async def get_recent_history(
+        self,
+        current_user: UserDTO,
+        limit: int = 10,
+    ) -> list[MessageDTO]:
+        chat = await self._require_active_chat(current_user=current_user)
+        return await self._message_repo.fetch_recent_chat_messages(
+            chat_id=chat.id,
+            limit=limit,
+        )
 
     async def _maybe_enqueue_extract_fact_task(
         self,
