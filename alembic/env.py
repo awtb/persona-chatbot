@@ -12,9 +12,8 @@ sys.path.append("src")
 
 config = context.config
 
-
-from persona_chatbot.settings import get_worker_settings
 from persona_chatbot.db.models import BaseModel
+from persona_chatbot.settings import get_database_settings
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -22,7 +21,7 @@ if config.config_file_name is not None:
 
 target_metadata = BaseModel.metadata
 
-app_settings = get_worker_settings()
+app_settings = get_database_settings()
 
 url = URL.create(
     drivername=app_settings.db_sync_driver,
