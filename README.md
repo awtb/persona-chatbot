@@ -1,4 +1,4 @@
-# Persona Chatbot
+# Persona Chatbot 🎭
 
 Telegram bot with selectable AI avatars, streamed replies, short-term chat history, and long-term fact memory.
 
