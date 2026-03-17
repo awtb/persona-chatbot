@@ -90,12 +90,12 @@ class UserService:
                 active_chat_id=chat.id,
             ),
         )
-        if updated_user is not None:
-            return updated_user
+        if updated_user is None:
+            raise UserNotFound(
+                telegram_user_id=current_user.telegram_user_id,
+            )
 
-        current_user.current_avatar_id = avatar_id
-        current_user.active_chat_id = chat.id
-        return current_user
+        return updated_user
 
     async def _close_active_chat_if_present(
         self,

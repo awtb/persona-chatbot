@@ -18,7 +18,7 @@ async def perform_reset(
     user_service: UserService,
 ) -> None:
     try:
-        updated_user = await user_service.reset_chat_context(
+        await user_service.reset_chat_context(
             current_user=current_user,
         )
     except AvatarNotSelected:
@@ -27,8 +27,6 @@ async def perform_reset(
         )
         return
 
-    current_user.active_chat_id = updated_user.active_chat_id
-    current_user.current_avatar_id = updated_user.current_avatar_id
     await message.answer(
         "Context cleared. Started a new chat with the current avatar.",
     )
