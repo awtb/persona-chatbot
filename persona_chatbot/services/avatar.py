@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from persona_chatbot.common.exceptions import AvatarNotSelected
@@ -20,8 +22,16 @@ class AvatarService:
         if current_user.current_avatar_id is None:
             raise AvatarNotSelected()
 
-        return await self._avatar_repo.get(
+        return await self.get_avatar(
             avatar_id=current_user.current_avatar_id,
+        )
+
+    async def get_avatar(
+        self,
+        avatar_id: UUID,
+    ) -> AvatarDTO:
+        return await self._avatar_repo.get(
+            avatar_id=avatar_id,
         )
 
     async def resolve_avatar_prompt(

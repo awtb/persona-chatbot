@@ -24,6 +24,7 @@ def upgrade() -> None:
     op.create_table(
         "avatars",
         sa.Column("name", sa.String(length=255), nullable=False),
+        sa.Column("description", sa.Text(), nullable=False),
         sa.Column("system_prompt", sa.Text(), nullable=False),
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column(

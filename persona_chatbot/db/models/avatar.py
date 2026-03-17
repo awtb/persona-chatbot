@@ -17,6 +17,10 @@ class Avatar(HasID, HasCreatedAt, BaseModel):
         String(255),
         nullable=False,
     )
+    description: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
     system_prompt: Mapped[str] = mapped_column(
         Text,
         nullable=False,
