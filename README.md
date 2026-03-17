@@ -55,6 +55,10 @@ possible backend, not a special built-in mode.
 Before starting, make sure Docker and Docker Compose are installed on your
 machine.
 
+The bot works through Telegram webhooks only. For local development, you need a
+public HTTPS URL that forwards requests to your API. A tunnel such as
+[ngrok](https://ngrok.com/) is a valid option.
+
 1. Create an env file from the example:
 
 ```bash
@@ -69,6 +73,12 @@ cp .env.example .env
 - `LLM_PROVIDER_API_KEY`
 - `LLM_PROVIDER_BASE_URL`
 - `LLM_MODEL`
+
+`TG_BOT_WEBHOOK_URL` must point to the app webhook endpoint, which is served at
+`/telegram`.
+
+`TG_BOT_WEBHOOK_TOKEN` is the secret token used to verify that incoming webhook
+requests really come from Telegram.
 
 The app expects an OpenAI-compatible API endpoint.
 
