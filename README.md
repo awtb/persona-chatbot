@@ -70,10 +70,18 @@ cp .env.example .env
 - `LLM_PROVIDER_BASE_URL`
 - `LLM_MODEL`
 
-The app expects an OpenAI-compatible API endpoint. The example configuration
-uses a local endpoint at `http://host.docker.internal:11434/v1`, which works
-for tools like Ollama that expose an OpenAI-compatible API. Change these values
-if you use another provider or a different local endpoint.
+The app expects an OpenAI-compatible API endpoint.
+
+Recommended hosted setup:
+
+```env
+LLM_PROVIDER_BASE_URL=https://api.groq.com/openai/v1
+LLM_MODEL=openai/gpt-oss-20b
+```
+
+If you prefer a local OpenAI-compatible endpoint, the example configuration
+uses `http://host.docker.internal:11434/v1`, which works for tools like Ollama
+that expose an OpenAI-compatible API.
 
 3. Start the full Docker setup:
 
