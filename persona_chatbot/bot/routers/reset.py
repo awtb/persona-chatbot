@@ -3,10 +3,13 @@ from aiogram.filters import Command
 from aiogram.types import Message
 
 from persona_chatbot.bot.states import UserState
+from persona_chatbot.common.exceptions import AvatarNotSelected
 from persona_chatbot.dto.user import UserDTO
 from persona_chatbot.services.user import UserService
+from persona_chatbot.templates import Renderer
 
 router = Router(name=__name__)
+RESET_AVATAR_REQUIRED_TEMPLATE = "bot/reset_avatar_required.jinja2"
 
 
 async def perform_reset(
@@ -14,10 +17,18 @@ async def perform_reset(
     current_user: UserDTO,
     user_service: UserService,
 ) -> None:
-    updated_user = await user_service.reset_chat_context(
-        current_user=current_user,
-    )
+    try:
+        updated_user = await user_service.reset_chat_context(
+            current_user=current_user,
+        )
+    except AvatarNotSelected:
+        await message.answer(
+            await Renderer.render(RESET_AVATAR_REQUIRED_TEMPLATE),
+        )
+        return
+
     current_user.active_chat_id = updated_user.active_chat_id
+    current_user.current_avatar_id = updated_user.current_avatar_id
     await message.answer(
         "Context cleared. Started a new chat with the current avatar.",
     )
