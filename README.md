@@ -142,3 +142,16 @@ Or run them separately:
 make api-dev
 make worker-dev
 ```
+
+## Observability
+
+The project can emit structured JSON logs via `LOGGING_MODE=structured`. This
+format is convenient for log aggregation and analysis in systems such as
+VictoriaLogs and Grafana.
+
+Example configuration:
+
+```env
+LOGGING_MODE=structured
+LOGGING_LVL=INFO
+```
