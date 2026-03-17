@@ -8,12 +8,14 @@ from persona_chatbot.settings import get_worker_settings
 from persona_chatbot.settings import WorkerSettings
 from persona_chatbot.worker.lifecycle import shutdown_worker
 from persona_chatbot.worker.lifecycle import startup_worker
-from persona_chatbot.worker.tasks import router as tasks_router
+from persona_chatbot.worker.tasks import build_router as build_tasks_router
 
 
 def build_broker(settings: WorkerSettings) -> RedisBroker:
     broker = RedisBroker(settings.redis_url)
-    broker.include_router(tasks_router)
+    broker.include_router(
+        build_tasks_router(settings=settings),
+    )
     return broker
 
 

@@ -6,12 +6,12 @@ from faststream.redis import RedisRouter
 from structlog.contextvars import bound_contextvars
 
 from persona_chatbot.schemas import TelegramUpdateTaskSchema
+from persona_chatbot.settings import WorkerSettings
 from persona_chatbot.worker.lifecycle import BOT_CONTEXT_KEY
 from persona_chatbot.worker.lifecycle import DISPATCHER_CONTEXT_KEY
 from persona_chatbot.worker.queues import TELEGRAM_UPDATES_QUEUE
 
 logger = structlog.get_logger(__name__)
-router = RedisRouter()
 
 
 async def _feed_update(
@@ -36,20 +36,30 @@ async def _feed_update(
         raise
 
 
-@router.subscriber(list=TELEGRAM_UPDATES_QUEUE)
-async def process_telegram_update(
-    payload: TelegramUpdateTaskSchema,
-    bot: Bot = Context(BOT_CONTEXT_KEY),
-    dispatcher: Dispatcher = Context(DISPATCHER_CONTEXT_KEY),
-) -> None:
-    with bound_contextvars(request_id=payload.request_id):
-        logger.info(
-            "Processing telegram update",
-            request_id=payload.request_id,
-        )
-        await _feed_update(
-            bot=bot,
-            dispatcher=dispatcher,
-            request_id=payload.request_id,
-            update=payload.update,
-        )
+def build_router(
+    settings: WorkerSettings,
+) -> RedisRouter:
+    router = RedisRouter()
+
+    @router.subscriber(
+        list=TELEGRAM_UPDATES_QUEUE,
+        max_workers=settings.telegram_updates_max_workers,
+    )
+    async def process_telegram_update(
+        payload: TelegramUpdateTaskSchema,
+        bot: Bot = Context(BOT_CONTEXT_KEY),
+        dispatcher: Dispatcher = Context(DISPATCHER_CONTEXT_KEY),
+    ) -> None:
+        with bound_contextvars(request_id=payload.request_id):
+            logger.info(
+                "Processing telegram update",
+                request_id=payload.request_id,
+            )
+            await _feed_update(
+                bot=bot,
+                dispatcher=dispatcher,
+                request_id=payload.request_id,
+                update=payload.update,
+            )
+
+    return router
