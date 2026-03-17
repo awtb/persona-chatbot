@@ -49,17 +49,26 @@ The Pavel Durov profile is opened before starting the chat.
   />
 </a>
 
-### 3. Chat After Sharing a Name
+### 3. Chat After Sharing a Fact
 
 The user shares their name and the selected avatar replies in character.
 
 <a href="assets/demo/chat-after-sharing-name.png">
   <img
     src="assets/demo/chat-after-sharing-name.png"
-    alt="Chat after sharing a name"
+    alt="Chat after sharing a fact"
     width="900"
   />
 </a>
+
+## Memory Extraction Log
+
+The worker logs also show that the fact was extracted and saved from the chat turn:
+
+```text
+worker-1  | {"chat_id": "UUID('2487ca2e-e2b3-4120-9b6e-44ba1d0bfc97')", "user_id": "UUID('9b9041de-31da-44ab-a244-52078c01e82d')", "avatar_id": "UUID('0b2c46e9-8466-42e5-ac47-8ff71c5f91ab')", "user_message_id": "UUID('ac907a89-d45a-4c58-90c8-bc4f1688b800')", "assistant_message_id": "UUID('8325631f-d0ea-402b-960a-fbb18176f6a6')", "user_message_chars": 34, "assistant_message_chars": 329, "existing_facts_count": 0, "saved_facts_count": 1, "extracted_facts": {"facts": [{"kind": "profile", "content": "name is Ilyas"}]}, "event": "Analyzed recent turn for memory extraction", "logger": "persona_chatbot.services.memory", "level": "info", "timestamp": "2026-03-17T10:21:14.557017Z", "service": "persona-chatbot-worker", "logging_mode": "structured", "message": "Analyzed recent turn for memory extraction"}
+worker-1  | {"event": "Processed", "logger": "faststream.access.redis", "level": "info", "timestamp": "2026-03-17T10:21:14.558971Z", "service": "persona-chatbot-worker", "logging_mode": "structured", "message": "Processed"}
+```
 
 ### 4. Facts Menu With the Saved Name
 
@@ -84,15 +93,6 @@ After `/reset`, the bot still recalls the stored name in a fresh chat context.
     width="760"
   />
 </a>
-
-## Memory Extraction Log
-
-The worker logs also show that the fact was extracted and saved from the chat turn:
-
-```text
-worker-1  | {"chat_id": "UUID('2487ca2e-e2b3-4120-9b6e-44ba1d0bfc97')", "user_id": "UUID('9b9041de-31da-44ab-a244-52078c01e82d')", "avatar_id": "UUID('0b2c46e9-8466-42e5-ac47-8ff71c5f91ab')", "user_message_id": "UUID('ac907a89-d45a-4c58-90c8-bc4f1688b800')", "assistant_message_id": "UUID('8325631f-d0ea-402b-960a-fbb18176f6a6')", "user_message_chars": 34, "assistant_message_chars": 329, "existing_facts_count": 0, "saved_facts_count": 1, "extracted_facts": {"facts": [{"kind": "profile", "content": "name is Ilyas"}]}, "event": "Analyzed recent turn for memory extraction", "logger": "persona_chatbot.services.memory", "level": "info", "timestamp": "2026-03-17T10:21:14.557017Z", "service": "persona-chatbot-worker", "logging_mode": "structured", "message": "Analyzed recent turn for memory extraction"}
-worker-1  | {"event": "Processed", "logger": "faststream.access.redis", "level": "info", "timestamp": "2026-03-17T10:21:14.558971Z", "service": "persona-chatbot-worker", "logging_mode": "structured", "message": "Processed"}
-```
 
 ## Short Note
 
