@@ -5,6 +5,7 @@ from aiogram.types import Message
 
 from persona_chatbot.bot.states import UserState
 from persona_chatbot.common.enums import MessageRole
+from persona_chatbot.common.exceptions import ActiveChatNotSelected
 from persona_chatbot.dto.message import MessageDTO
 from persona_chatbot.dto.user import UserDTO
 from persona_chatbot.services.chat import ChatService
@@ -13,6 +14,7 @@ from persona_chatbot.templates import Renderer
 router = Router(name=__name__)
 
 HISTORY_LIMIT = 10
+NO_ACTIVE_CHAT_TEXT = "No active chat yet. Send a message to start one."
 
 
 async def _render_history(
@@ -30,10 +32,15 @@ async def show_history(
     current_user: UserDTO,
     chat_service: ChatService,
 ) -> None:
-    messages = await chat_service.get_recent_history(
-        current_user=current_user,
-        limit=HISTORY_LIMIT,
-    )
+    try:
+        messages = await chat_service.get_recent_history(
+            current_user=current_user,
+            limit=HISTORY_LIMIT,
+        )
+    except ActiveChatNotSelected:
+        await message.answer(NO_ACTIVE_CHAT_TEXT)
+        return
+
     await message.answer(
         await _render_history(messages=messages),
         parse_mode=ParseMode.HTML,
