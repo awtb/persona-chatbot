@@ -25,7 +25,7 @@ seed-avatars:
 seed-prod: migrate seed-avatars
 
 compose:
-	docker compose --profile seed run --rm seed
+	docker compose --profile seed run --build --rm seed
 	docker compose up --build
 
 api-dev: migrate
