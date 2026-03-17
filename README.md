@@ -48,6 +48,14 @@ possible backend, not a special built-in mode.
 - Professor Moriarty - theatrical criminal mastermind persona with polished, hypnotic delivery
 - Pavel Durov - calm, minimalist, privacy-focused tech idealist persona
 
+## Disclaimer
+
+All personas and characterizations in this project are fictionalized constructs
+created for demonstration purposes. They are not intended to depict any real
+person accurately or to make factual claims about any real individual. Any
+overlap in names, traits, or references should be understood as part of the
+project's fictional framing.
+
 ## Quick Start
 
 ### Docker
