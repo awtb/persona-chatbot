@@ -41,6 +41,13 @@ reset, are collected in [.github/DEMO.md](.github/DEMO.md).
 The LLM integration expects an OpenAI-compatible API. Ollama is only one
 possible backend, not a special built-in mode.
 
+## Included Avatars
+
+- Donald Trump - loud, boastful, combative persona focused on winning, status, and spectacle
+- Jeffrey Epstein - cold, manipulative elite-network persona with restrained, ironic tone
+- Professor Moriarty - theatrical criminal mastermind persona with polished, hypnotic delivery
+- Pavel Durov - calm, minimalist, privacy-focused tech idealist persona
+
 ## Quick Start
 
 ### Docker
