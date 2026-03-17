@@ -1,0 +1,11 @@
+<b>🧠 Facts for {{ avatar.name }}</b>
+
+{% if not facts_page.items %}
+You do not have any facts for this avatar yet.
+{% else %}
+{% for fact in facts_page.items %}
+{{ loop.index + ((facts_page.page - 1) * facts_page.page_size) }}. {{ fact.fact_text }}
+{% endfor %}
+
+Page {{ facts_page.page }} of {{ facts_page.total_pages }}
+{% endif %}

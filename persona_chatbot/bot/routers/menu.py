@@ -7,10 +7,12 @@ from aiogram.types import Message
 
 from persona_chatbot.bot.callbacks import MENU_AVATARS_CALLBACK
 from persona_chatbot.bot.callbacks import MENU_CALLBACK_PREFIX
+from persona_chatbot.bot.callbacks import MENU_FACTS_CALLBACK
 from persona_chatbot.bot.callbacks import MENU_HISTORY_CALLBACK
 from persona_chatbot.bot.callbacks import MENU_RESET_CALLBACK
 from persona_chatbot.bot.keyboards import build_menu_keyboard
 from persona_chatbot.bot.routers.avatar import show_avatar_selection
+from persona_chatbot.bot.routers.facts import show_facts_menu
 from persona_chatbot.bot.routers.history import show_history
 from persona_chatbot.bot.routers.reset import perform_reset
 from persona_chatbot.dto.user import UserDTO
@@ -48,6 +50,13 @@ async def handle_menu_action(
             message=message,
             current_user=current_user,
             chat_service=chat_service,
+        )
+        return
+
+    if callback_query.data == MENU_FACTS_CALLBACK:
+        await show_facts_menu(
+            message=message,
+            user_service=user_service,
         )
         return
 

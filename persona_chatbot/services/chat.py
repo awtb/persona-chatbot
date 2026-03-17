@@ -11,6 +11,8 @@ from persona_chatbot.common.exceptions import LLMProviderError
 from persona_chatbot.db.repos.chat import ChatRepo
 from persona_chatbot.db.repos.memory import MemoryFactRepo
 from persona_chatbot.db.repos.message import MessageRepo
+from persona_chatbot.dto.avatar import AvatarDTO
+from persona_chatbot.dto.base import PageDTO
 from persona_chatbot.dto.chat import ChatDTO
 from persona_chatbot.dto.chat import ChatReplyStream
 from persona_chatbot.dto.chat import ChatUpdateDTO
@@ -108,6 +110,24 @@ class ChatService:
             chat_id=chat.id,
             limit=limit,
         )
+
+    async def get_avatar_facts(
+        self,
+        current_user: UserDTO,
+        avatar_id: UUID,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> tuple[AvatarDTO, PageDTO[MemoryFactDTO]]:
+        avatar = await self._avatar_service.get_avatar(
+            avatar_id=avatar_id,
+        )
+        facts_page = await self._memory_fact_repo.fetch_user_avatar_facts_page(
+            user_id=current_user.id,
+            avatar_id=avatar.id,
+            page=page,
+            page_size=page_size,
+        )
+        return avatar, facts_page
 
     async def _maybe_enqueue_extract_fact_task(
         self,

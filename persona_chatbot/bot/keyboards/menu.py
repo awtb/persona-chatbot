@@ -2,6 +2,7 @@ from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from persona_chatbot.bot.callbacks import MENU_AVATARS_CALLBACK
+from persona_chatbot.bot.callbacks import MENU_FACTS_CALLBACK
 from persona_chatbot.bot.callbacks import MENU_HISTORY_CALLBACK
 from persona_chatbot.bot.callbacks import MENU_RESET_CALLBACK
 
@@ -13,6 +14,10 @@ def build_menu_keyboard() -> InlineKeyboardMarkup:
         callback_data=MENU_HISTORY_CALLBACK,
     )
     builder.button(
+        text="🧠 Facts",
+        callback_data=MENU_FACTS_CALLBACK,
+    )
+    builder.button(
         text="🎭 Avatars",
         callback_data=MENU_AVATARS_CALLBACK,
     )
@@ -20,5 +25,5 @@ def build_menu_keyboard() -> InlineKeyboardMarkup:
         text="♻️ Reset",
         callback_data=MENU_RESET_CALLBACK,
     )
-    builder.adjust(2, 1)
+    builder.adjust(2, 2)
     return builder.as_markup()

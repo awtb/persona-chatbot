@@ -8,6 +8,7 @@ from persona_chatbot.db.mappers.memory import apply_memory_fact_update_dto
 from persona_chatbot.db.mappers.memory import to_memory_fact_dto
 from persona_chatbot.db.models.memory_fact import MemoryFact
 from persona_chatbot.db.repos.base import BaseRepository
+from persona_chatbot.dto.base import PageDTO
 from persona_chatbot.dto.memory import MemoryFactCreateDTO
 from persona_chatbot.dto.memory import MemoryFactDTO
 from persona_chatbot.dto.memory import MemoryFactUpdateDTO
@@ -150,3 +151,26 @@ class MemoryFactRepo(BaseRepository):
         for memory_fact in memory_facts:
             items.append(to_memory_fact_dto(memory_fact))
         return items
+
+    async def fetch_user_avatar_facts_page(
+        self,
+        *,
+        user_id: UUID,
+        avatar_id: UUID,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> PageDTO[MemoryFactDTO]:
+        query = (
+            select(MemoryFact)
+            .where(
+                MemoryFact.user_id == user_id,
+                MemoryFact.avatar_id == avatar_id,
+            )
+            .order_by(MemoryFact.created_at.asc())
+        )
+        return await self._fetch(
+            query=query,
+            page=page,
+            page_size=page_size,
+            mapper_fn=to_memory_fact_dto,
+        )

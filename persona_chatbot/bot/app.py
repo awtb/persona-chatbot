@@ -15,6 +15,7 @@ from persona_chatbot.bot.middlewares import SettingsProviderMiddleware
 from persona_chatbot.bot.middlewares import UserDependenciesMiddleware
 from persona_chatbot.bot.routers.avatar import router as avatar_router
 from persona_chatbot.bot.routers.chat import router as chat_router
+from persona_chatbot.bot.routers.facts import router as facts_router
 from persona_chatbot.bot.routers.history import router as history_router
 from persona_chatbot.bot.routers.menu import router as menu_router
 from persona_chatbot.bot.routers.onboarding import router as onboarding_router
@@ -26,23 +27,27 @@ def build_bot_commands() -> list[BotCommand]:
     return [
         BotCommand(
             command="start",
-            description="Start or continue chatting",
-        ),
-        BotCommand(
-            command="reset",
-            description="Start a new chat",
-        ),
-        BotCommand(
-            command="avatars",
-            description="Choose another avatar",
+            description="Open the welcome screen",
         ),
         BotCommand(
             command="menu",
-            description="Show bot menu",
+            description="Open quick actions",
+        ),
+        BotCommand(
+            command="avatars",
+            description="Choose an avatar",
         ),
         BotCommand(
             command="history",
-            description="Show recent chat history",
+            description="Show the last 10 messages",
+        ),
+        BotCommand(
+            command="facts",
+            description="Browse stored facts by avatar",
+        ),
+        BotCommand(
+            command="reset",
+            description="Start a fresh chat",
         ),
     ]
 
@@ -89,6 +94,9 @@ def build_dispatcher(
     )
     dp.include_router(
         history_router,
+    )
+    dp.include_router(
+        facts_router,
     )
     dp.include_router(
         reset_router,
