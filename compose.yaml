@@ -30,8 +30,10 @@ services:
       context: .
       dockerfile: Dockerfile
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
     command: ["make", "worker-prod"]
     environment:
       DB_USER: ${DB_USER:-persona_chatbot}
@@ -54,6 +56,24 @@ services:
       LOGGING_MODE: ${LOGGING_MODE:-structured}
       LOGGING_LVL: ${LOGGING_LVL:-INFO}
       SERVICE_NAME: ${SERVICE_NAME:-persona-chatbot-worker}
+  seed:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    profiles: ["seed"]
+    depends_on:
+      db:
+        condition: service_started
+    command: ["make", "seed-prod"]
+    environment:
+      DB_USER: ${DB_USER:-persona_chatbot}
+      DB_PASSWORD: ${DB_PASSWORD:-persona_chatbot}
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-persona_chatbot}
+      LOGGING_MODE: ${LOGGING_MODE:-structured}
+      LOGGING_LVL: ${LOGGING_LVL:-INFO}
+      SERVICE_NAME: ${SERVICE_NAME:-persona-chatbot-seed}
   db:
     image: postgres:17
     volumes:

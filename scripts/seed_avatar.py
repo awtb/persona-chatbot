@@ -7,6 +7,7 @@ from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy import URL
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -160,39 +161,43 @@ async def seed_avatars(
 
     try:
         async with session_maker() as session:
-            for seed in AVATAR_SEEDS:
-                avatar = await session.scalar(
-                    select(Avatar).where(Avatar.name == seed.name),
-                )
-                if avatar is None:
-                    avatar = Avatar(
-                        name=seed.name,
-                        description=seed.description,
-                        system_prompt=seed.system_prompt,
-                    )
-                    session.add(avatar)
-                    await session.commit()
-                    await session.refresh(avatar)
-                    print(
-                        f"Created avatar id={avatar.id} name={avatar.name!r}",
-                    )
-                    continue
-
-                if not overwrite:
-                    print(
-                        "Avatar already exists "
-                        f"(id={avatar.id}, name={avatar.name!r}).",
-                    )
-                    continue
-
-                avatar.description = seed.description
-                avatar.system_prompt = seed.system_prompt
-                await session.commit()
-                print(
-                    f"Updated avatar id={avatar.id} name={avatar.name!r}",
-                )
+            await seed_default_avatars(
+                session=session,
+                overwrite=overwrite,
+            )
+            await session.commit()
     finally:
         await engine.dispose()
+
+
+async def seed_default_avatars(
+    session: AsyncSession,
+    *,
+    overwrite: bool,
+) -> None:
+    from persona_chatbot.db.models.avatar import Avatar
+
+    for seed in AVATAR_SEEDS:
+        avatar = await session.scalar(
+            select(Avatar).where(Avatar.name == seed.name),
+        )
+        if avatar is None:
+            session.add(
+                Avatar(
+                    name=seed.name,
+                    description=seed.description,
+                    system_prompt=seed.system_prompt,
+                )
+            )
+            continue
+
+        if not overwrite:
+            continue
+
+        avatar.description = seed.description
+        avatar.system_prompt = seed.system_prompt
+
+    await session.flush()
 
 
 def main() -> None:

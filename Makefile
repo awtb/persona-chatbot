@@ -1,6 +1,6 @@
 SHELL := /bin/sh
 
-.PHONY: install migrate api-dev api-prod worker-dev worker-prod dev prod pre-commit
+.PHONY: install migrate seed-avatars seed-prod compose api-dev api-prod worker-dev worker-prod dev prod pre-commit
 
 UV = uv
 UV_RUN = $(UV) run
@@ -18,6 +18,15 @@ install:
 
 migrate:
 	$(UV_RUN) alembic upgrade head
+
+seed-avatars:
+	$(UV_RUN) python scripts/seed_avatar.py --overwrite
+
+seed-prod: migrate seed-avatars
+
+compose:
+	docker compose --profile seed run --rm seed
+	docker compose up --build
 
 api-dev: migrate
 	$(API_DEV)
