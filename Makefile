@@ -28,10 +28,10 @@ compose:
 	docker compose --profile seed run --build --rm seed
 	docker compose up --build
 
-api-dev: migrate
+api-dev:
 	$(API_DEV)
 
-api-prod: migrate
+api-prod:
 	$(API_PROD)
 
 worker-dev: migrate
