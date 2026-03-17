@@ -4,6 +4,7 @@ from uuid import UUID
 import structlog
 from faststream.redis import RedisBroker
 
+from persona_chatbot.common.constants import FALLBACK_RESPONSE_TEXT
 from persona_chatbot.common.enums import MessageRole
 from persona_chatbot.common.exceptions import ActiveChatNotSelected
 from persona_chatbot.common.exceptions import LLMProviderError
@@ -24,7 +25,6 @@ from persona_chatbot.services.avatar import AvatarService
 from persona_chatbot.templates import Renderer
 from persona_chatbot.worker.queues import EXTRACT_MEMORY_FACTS_QUEUE
 
-FALLBACK_RESPONSE = "I could not generate a response right now."
 MIN_MEMORY_SOURCE_MESSAGE_LEN = 10
 SYSTEM_PROMPT_MEMORY_FACTS_LIMIT = 10
 SYSTEM_PROMPT_TEMPLATE = "prompts/system/system_prompt_base.jinja2"
@@ -143,7 +143,6 @@ class ChatService:
             avatar_id=avatar.id,
             memory_facts_count=len(memory_facts),
             memory_fact_ids=[fact.id for fact in memory_facts],
-            memory_fact_texts=[fact.fact_text for fact in memory_facts],
         )
 
         system_prompt = await Renderer.render(
@@ -260,4 +259,4 @@ class ChatService:
             ):
                 yield chunk
         except LLMProviderError:
-            yield FALLBACK_RESPONSE
+            yield FALLBACK_RESPONSE_TEXT

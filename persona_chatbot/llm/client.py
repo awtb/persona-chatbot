@@ -13,6 +13,7 @@ from openai.types.chat import ChatCompletionSystemMessageParam
 from openai.types.chat import ChatCompletionUserMessageParam
 from pydantic import BaseModel
 
+from persona_chatbot.common.constants import FALLBACK_RESPONSE_TEXT
 from persona_chatbot.common.enums import MessageRole
 from persona_chatbot.common.exceptions import LLMProviderError
 from persona_chatbot.dto.llm import LLMMessageDTO
@@ -111,16 +112,13 @@ class LLMClient:
                 "Sending message to assistant",
                 model=self._model,
                 base_url=self._base_url,
-                system_prompt=system_prompt,
-                user_message=message,
+                system_prompt_chars=len(system_prompt),
+                user_message_chars=len(message),
                 previous_messages_count=len(previous_messages),
-                previous_messages=[
-                    {
-                        "role": previous_message.role.value,
-                        "content": previous_message.content,
-                    }
+                previous_messages_chars=sum(
+                    len(previous_message.content)
                     for previous_message in previous_messages
-                ],
+                ),
                 total_messages=len(messages),
             )
             stream = await self._client.chat.completions.create(
@@ -140,16 +138,12 @@ class LLMClient:
                 if content:
                     has_deltas = True
                     chunk_count += 1
-                    chunk_offset_start = total_chars
                     total_chars += len(content)
                     logger.debug(
                         "Received assistant chunk",
                         model=self._model,
                         chunk_index=chunk_count,
-                        chunk=content,
                         chunk_chars=len(content),
-                        chunk_offset_start=chunk_offset_start,
-                        chunk_offset_end=total_chars,
                         total_streamed_chars=total_chars,
                     )
                     yield content
@@ -166,7 +160,7 @@ class LLMClient:
                     "Assistant stream returned no deltas, using fallback",
                     model=self._model,
                 )
-                yield "I could not generate a response."
+                yield FALLBACK_RESPONSE_TEXT
         except (
             APIConnectionError,
             APIError,
