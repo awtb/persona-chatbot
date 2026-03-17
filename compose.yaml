@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - redis
-    command: ["uv", "run", "make", "prod"]
+    command: ["make", "api-prod"]
     ports:
       - ${SERVING_PORT:-8000}:${SERVING_PORT:-8000}
     environment:
@@ -32,7 +32,7 @@ services:
     depends_on:
       - db
       - redis
-    command: ["uv", "run", "python", "-m", "persona_chatbot", "worker"]
+    command: ["make", "worker-prod"]
     environment:
       DB_USER: ${DB_USER:-persona_chatbot}
       DB_PASSWORD: ${DB_PASSWORD:-persona_chatbot}

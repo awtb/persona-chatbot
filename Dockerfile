@@ -27,4 +27,4 @@ RUN groupadd --system app \
 
 USER app
 
-CMD ["uv", "run", "make", "prod"]
+CMD ["make", "prod"]
