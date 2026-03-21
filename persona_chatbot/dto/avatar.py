@@ -11,4 +11,5 @@ class AvatarDTO(BaseDTO):
     name: str
     description: str
     system_prompt: str
+    temperature: float | None
     created_at: datetime

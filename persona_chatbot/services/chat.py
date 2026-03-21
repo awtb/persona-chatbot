@@ -4,6 +4,7 @@ from uuid import UUID
 import structlog
 from faststream.redis import RedisBroker
 
+from persona_chatbot.common.constants import DEFAULT_AVATAR_TEMPERATURE
 from persona_chatbot.common.constants import FALLBACK_RESPONSE_TEXT
 from persona_chatbot.common.enums import MessageRole
 from persona_chatbot.common.exceptions import ActiveChatNotSelected
@@ -64,6 +65,9 @@ class ChatService:
                 chat_id=chat.id,
                 limit=self._max_previous_messages,
             )
+            avatar = await self._avatar_service.resolve_avatar(
+                current_user=current_user,
+            )
             chat, user_message = await self._save_message(
                 chat=chat,
                 role=MessageRole.USER,
@@ -71,12 +75,15 @@ class ChatService:
             )
             system_prompt = await self._build_system_prompt(
                 current_user=current_user,
+                avatar=avatar,
             )
+            temperature = self._resolve_avatar_temperature(avatar=avatar)
             assistant_chunks: list[str] = []
             async for chunk in self._stream_assistant_chunks(
                 message=message,
                 system_prompt=system_prompt,
                 previous_messages=previous_messages,
+                temperature=temperature,
             ):
                 assistant_chunks.append(chunk)
                 yield chunk
@@ -152,10 +159,8 @@ class ChatService:
     async def _build_system_prompt(
         self,
         current_user: UserDTO,
+        avatar: AvatarDTO,
     ) -> str:
-        avatar = await self._avatar_service.resolve_avatar(
-            current_user=current_user,
-        )
         memory_facts = await self._load_memory_facts(current_user=current_user)
         logger.debug(
             "Injecting memory facts into system prompt",
@@ -270,13 +275,24 @@ class ChatService:
         message: str,
         system_prompt: str,
         previous_messages: list[LLMMessageDTO],
+        temperature: float,
     ) -> AsyncIterator[str]:
         try:
             async for chunk in self._llm_client.stream_reply(
                 message=message,
                 system_prompt=system_prompt,
                 previous_messages=previous_messages,
+                temperature=temperature,
             ):
                 yield chunk
         except LLMProviderError:
             yield FALLBACK_RESPONSE_TEXT
+
+    @staticmethod
+    def _resolve_avatar_temperature(
+        avatar: AvatarDTO,
+    ) -> float:
+        if avatar.temperature is not None:
+            return avatar.temperature
+
+        return DEFAULT_AVATAR_TEMPERATURE

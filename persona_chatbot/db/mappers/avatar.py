@@ -8,5 +8,6 @@ def to_avatar_dto(avatar: Avatar) -> AvatarDTO:
         name=avatar.name,
         description=avatar.description,
         system_prompt=avatar.system_prompt,
+        temperature=avatar.temperature,
         created_at=avatar.created_at,
     )

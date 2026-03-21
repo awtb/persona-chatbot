@@ -43,11 +43,13 @@ class LLMClient:
         message: str,
         system_prompt: str,
         previous_messages: list[LLMMessageDTO],
+        temperature: float | None = None,
     ) -> AsyncIterator[str]:
         return self._stream_reply(
             message=message,
             system_prompt=system_prompt,
             previous_messages=previous_messages,
+            temperature=temperature,
         )
 
     async def complete(
@@ -98,6 +100,7 @@ class LLMClient:
         message: str,
         system_prompt: str,
         previous_messages: list[LLMMessageDTO],
+        temperature: float | None = None,
     ) -> AsyncIterator[str]:
         try:
             has_deltas = False
@@ -120,12 +123,21 @@ class LLMClient:
                     for previous_message in previous_messages
                 ),
                 total_messages=len(messages),
+                temperature=temperature,
             )
-            stream = await self._client.chat.completions.create(
-                model=self._model,
-                messages=messages,
-                stream=True,
-            )
+            if temperature is None:
+                stream = await self._client.chat.completions.create(
+                    model=self._model,
+                    messages=messages,
+                    stream=True,
+                )
+            else:
+                stream = await self._client.chat.completions.create(
+                    model=self._model,
+                    messages=messages,
+                    stream=True,
+                    temperature=temperature,
+                )
             logger.debug(
                 "Assistant stream started",
                 model=self._model,

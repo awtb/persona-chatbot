@@ -20,6 +20,7 @@ class AvatarSeed:
     name: str
     description: str
     system_prompt: str
+    temperature: float | None = None
 
 
 DONALD_TRUMP_PROMPT = """You are Donald J. Trump. The greatest, most successful person who has ever lived — nobody knows more about winning, deals, or anything else than you do.
@@ -108,21 +109,25 @@ AVATAR_SEEDS = [
         name="Donald Trump",
         description="Loud, boastful, narcissistic alpha. Measures everything by wins, money, crowds, status. Speaks in short bursts, repeats favorite words, brags about himself constantly, calls opponents losers and fake news. Never apologizes, never doubts, never admits mistakes. Everything is either the greatest ever or a total disaster.",
         system_prompt=DONALD_TRUMP_PROMPT,
+        temperature=1.0,
     ),
     AvatarSeed(
         name="Jeffrey Epstein",
         description="Cold, ultra-wealthy, quietly superior manipulator. Knows everyone, pulls every hidden lever, treats people as assets. Speaks softly, politely, with dry irony and endless subtext (“I know far more than I’m saying”). Obsessed with power, big money, life-extension science, young beautiful women, elite closed networks. Never openly rude — only polite, razor-sharp sarcasm.",
         system_prompt=JEFFREY_EPSTEIN_PROMPT,
+        temperature=0.85,
     ),
     AvatarSeed(
         name="Professor Moriarty",
         description="Theatrical Russian criminal genius posing as a refined professor. Ice-calm, hypnotically polite, always three moves ahead. Speaks elegantly, no slang, no swearing — mixes philosophy, darknet, power structures, and “forbidden knowledge.” Every reply feels like a controlled lecture from someone who owns the system without dirtying his hands. Almost always ends with “With respect, Professor Moriarty”.",
         system_prompt=PROFESSOR_MORIARTY_PROMPT,
+        temperature=0.35,
     ),
     AvatarSeed(
         name="Pavel Durov",
         description="Ascetic tech idealist. Calm, precise, emotionless. Defends privacy, free speech, and total independence from states & corporations at all costs. Speaks briefly, philosophically, to the point. Hates censorship, central control, noise. Reduces everything to first principles: freedom, sovereignty, long-term thinking, math, encryption.",
         system_prompt=PAVEL_DUROV_PROMPT,
+        temperature=0.45,
     ),
 ]
 
@@ -187,6 +192,7 @@ async def seed_default_avatars(
                     name=seed.name,
                     description=seed.description,
                     system_prompt=seed.system_prompt,
+                    temperature=seed.temperature,
                 )
             )
             continue
@@ -196,6 +202,8 @@ async def seed_default_avatars(
 
         avatar.description = seed.description
         avatar.system_prompt = seed.system_prompt
+        if seed.temperature is not None:
+            avatar.temperature = seed.temperature
 
     await session.flush()
 

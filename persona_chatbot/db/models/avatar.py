@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from sqlalchemy import Float
 from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy.orm import Mapped
@@ -24,4 +25,8 @@ class Avatar(HasID, HasCreatedAt, BaseModel):
     system_prompt: Mapped[str] = mapped_column(
         Text,
         nullable=False,
+    )
+    temperature: Mapped[float | None] = mapped_column(
+        Float,
+        nullable=True,
     )
